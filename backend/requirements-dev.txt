@@ -1,0 +1,3 @@
+-r requirements.txt
+# Install without Postgres driver for unit tests on newer Python:
+#   pip install $(grep -v psycopg requirements.txt)
