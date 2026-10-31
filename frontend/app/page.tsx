@@ -48,7 +48,6 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
-              required
             />
           </div>
           <div className="field">
@@ -59,7 +58,6 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              required
             />
           </div>
           <button type="submit" disabled={loading} style={{ width: "100%" }}>
