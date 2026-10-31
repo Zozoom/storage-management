@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Empty = same origin: on Vercel /api/* is routed to the backend service.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export type Item = {
   id: number;

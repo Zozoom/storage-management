@@ -29,6 +29,11 @@ docker compose up --build
 - App: http://localhost:3000  
 - API + Swagger: http://localhost:8000/docs  
 
+## Deploy on Vercel
+
+`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else goes to Next.js. Run both locally with `vercel dev`.
+Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
+
 ## Local development
 
 ### 1. Backend
