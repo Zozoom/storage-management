@@ -21,6 +21,8 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [query, setQuery] = useState("");
 
   const load = useCallback(async (t: string) => {
     const data = await fetchItems(t);
@@ -75,6 +77,7 @@ export default function DashboardPage() {
     if (!token) return;
     const created = await createItem(token, body);
     setItems((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+    setAdding(false);
   }
 
   function logout() {
@@ -83,39 +86,83 @@ export default function DashboardPage() {
   }
 
   const lowCount = items.filter((i) => i.low_stock).length;
-
-  if (loading) {
-    return (
-      <main className={styles.page}>
-        <p className={styles.muted}>Loading…</p>
-      </main>
-    );
-  }
+  const totalUnits = items.reduce((sum, i) => sum + i.quantity, 0);
+  const q = query.trim().toLowerCase();
+  const visible = q
+    ? items.filter((i) =>
+        [i.name, i.sku, i.location].some((v) => v.toLowerCase().includes(q))
+      )
+    : items;
 
   return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <p className={styles.brand}>Storage</p>
-          <h1>Stock inventory</h1>
-          <p className={styles.muted}>
-            {items.length} items
-            {lowCount > 0 ? ` · ${lowCount} low stock` : ""}
-          </p>
+    <>
+      <header className={styles.topbar}>
+        <div className={styles.topbarInner}>
+          <div className={styles.brand}>
+            <span className={styles.logo} aria-hidden>
+              ▦
+            </span>
+            Storage
+          </div>
+          <button type="button" className="ghost" onClick={logout}>
+            Log out
+          </button>
         </div>
-        <button type="button" className="ghost" onClick={logout}>
-          Log out
-        </button>
       </header>
 
-      <AddItemForm onSubmit={handleCreate} />
-      {error && <p className="error">{error}</p>}
-      <ItemTable
-        items={items}
-        onAdjust={handleAdjust}
-        onDelete={handleDelete}
-        busyId={busyId}
-      />
-    </main>
+      <main className={styles.page}>
+        <h1>Inventory</h1>
+        <p className={styles.muted}>
+          See what you have, where it is, and what needs restocking.
+        </p>
+
+        {loading ? (
+          <p className={styles.muted}>Loading…</p>
+        ) : (
+          <>
+            <section className={styles.stats}>
+              <div className={styles.stat}>
+                <span>Products</span>
+                <strong>{items.length}</strong>
+              </div>
+              <div className={styles.stat}>
+                <span>Units in stock</span>
+                <strong>{totalUnits}</strong>
+              </div>
+              <div className={styles.stat} data-warn={lowCount > 0 || undefined}>
+                <span>Need restocking</span>
+                <strong>{lowCount}</strong>
+              </div>
+            </section>
+
+            <div className={styles.toolbar}>
+              <input
+                type="search"
+                placeholder="Search by name, SKU or location…"
+                aria-label="Search items"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              {!adding && (
+                <button type="button" onClick={() => setAdding(true)}>
+                  + Add item
+                </button>
+              )}
+            </div>
+
+            {adding && (
+              <AddItemForm onSubmit={handleCreate} onCancel={() => setAdding(false)} />
+            )}
+            {error && <p className="error">{error}</p>}
+            <ItemTable
+              items={visible}
+              onAdjust={handleAdjust}
+              onDelete={handleDelete}
+              busyId={busyId}
+            />
+          </>
+        )}
+      </main>
+    </>
   );
 }

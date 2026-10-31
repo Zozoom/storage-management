@@ -28,7 +28,7 @@ describe("ItemTable", () => {
     );
     expect(screen.getByText("WDG-001")).toBeInTheDocument();
     expect(screen.getByText("Widget")).toBeInTheDocument();
-    expect(screen.getByText("Low")).toBeInTheDocument();
+    expect(screen.getByText("Low stock")).toBeInTheDocument();
   });
 
   it("calls onAdjust when +1 is clicked", () => {
@@ -54,6 +54,6 @@ describe("ItemTable", () => {
         busyId={null}
       />
     );
-    expect(screen.getByText(/No items in stock/)).toBeInTheDocument();
+    expect(screen.getByText(/No items found/)).toBeInTheDocument();
   });
 });

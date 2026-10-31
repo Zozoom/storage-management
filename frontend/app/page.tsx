@@ -35,9 +35,11 @@ export default function LoginPage() {
   return (
     <main className={styles.wrap}>
       <section className={styles.panel}>
-        <p className={styles.brand}>Storage</p>
-        <h1>Sign in</h1>
-        <p className={styles.sub}>Manage warehouse stock for your items.</p>
+        <div className={styles.logo} aria-hidden>
+          ▦
+        </div>
+        <h1>Welcome back</h1>
+        <p className={styles.sub}>Sign in to manage your warehouse stock.</p>
         <form onSubmit={onSubmit}>
           <div className="field">
             <label htmlFor="username">Username</label>
@@ -65,9 +67,24 @@ export default function LoginPage() {
           </button>
           {error && <p className="error">{error}</p>}
         </form>
-        <p className={styles.hint}>
-          Demo: <code>admin / admin123</code> or <code>clerk / clerk123</code>
-        </p>
+        <div className={styles.demo}>
+          Try a demo account:
+          <div className={styles.demoRow}>
+            {["admin", "clerk"].map((u) => (
+              <button
+                key={u}
+                type="button"
+                className="ghost"
+                onClick={() => {
+                  setUsername(u);
+                  setPassword(`${u}123`);
+                }}
+              >
+                {u}
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
     </main>
   );

@@ -14,10 +14,10 @@ export type NewItem = {
 
 type Props = {
   onSubmit: (item: NewItem) => Promise<void>;
+  onCancel: () => void;
 };
 
-export function AddItemForm({ onSubmit }: Props) {
-  const [open, setOpen] = useState(false);
+export function AddItemForm({ onSubmit, onCancel }: Props) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,8 +35,6 @@ export function AddItemForm({ onSubmit }: Props) {
         location: String(fd.get("location") || "A-01").trim(),
         min_stock: Number(fd.get("min_stock") || 5),
       });
-      e.currentTarget.reset();
-      setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add item");
     } finally {
@@ -44,24 +42,18 @@ export function AddItemForm({ onSubmit }: Props) {
     }
   }
 
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)}>
-        Add item
-      </button>
-    );
-  }
-
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <h2 className={styles.title}>New item</h2>
       <div className={styles.grid}>
         <div className="field">
-          <label htmlFor="sku">SKU</label>
-          <input id="sku" name="sku" required />
+          <label htmlFor="name">Name</label>
+          <input id="name" name="name" placeholder="e.g. Shipping box" required />
         </div>
         <div className="field">
-          <label htmlFor="name">Name</label>
-          <input id="name" name="name" required />
+          <label htmlFor="sku">SKU</label>
+          <input id="sku" name="sku" placeholder="e.g. BOX-M" required />
+          <p className="hint">Unique product code.</p>
         </div>
         <div className="field">
           <label htmlFor="quantity">Quantity</label>
@@ -70,22 +62,24 @@ export function AddItemForm({ onSubmit }: Props) {
         <div className="field">
           <label htmlFor="location">Location</label>
           <input id="location" name="location" defaultValue="A-01" />
+          <p className="hint">Shelf or bin, e.g. A-01.</p>
         </div>
         <div className="field">
-          <label htmlFor="min_stock">Min stock</label>
+          <label htmlFor="min_stock">Restock below</label>
           <input id="min_stock" name="min_stock" type="number" min={0} defaultValue={5} />
+          <p className="hint">Flags the item when stock drops under this.</p>
         </div>
         <div className="field">
-          <label htmlFor="description">Description</label>
+          <label htmlFor="description">Description (optional)</label>
           <input id="description" name="description" />
         </div>
       </div>
       <div className={styles.row}>
+        <button type="button" className="ghost" onClick={onCancel}>
+          Cancel
+        </button>
         <button type="submit" disabled={loading}>
           {loading ? "Saving…" : "Save item"}
-        </button>
-        <button type="button" className="ghost" onClick={() => setOpen(false)}>
-          Cancel
         </button>
       </div>
       {error && <p className="error">{error}</p>}

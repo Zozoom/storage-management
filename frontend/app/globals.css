@@ -1,16 +1,20 @@
 :root {
-  --bg: #0f1419;
-  --surface: #1a222c;
-  --surface-2: #243040;
-  --border: #2e3d4f;
-  --text: #e8eef4;
-  --muted: #8b9aab;
-  --accent: #3d9a7a;
-  --accent-hover: #4db38f;
-  --danger: #d4645a;
-  --warn: #d4a24c;
-  --radius: 10px;
-  --font: "DM Sans", system-ui, sans-serif;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f2f4f7;
+  --border: #e4e7ec;
+  --text: #101828;
+  --muted: #667085;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef2ff;
+  --danger: #d92d20;
+  --warn: #b54708;
+  --warn-soft: #fffaeb;
+  --ok: #067647;
+  --ok-soft: #ecfdf3;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
 }
 
 * {
@@ -22,12 +26,9 @@
 html,
 body {
   min-height: 100%;
-  font-family: var(--font);
-  background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, #1a3d32 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, #1e2a3a 0%, transparent 45%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -42,17 +43,24 @@ input {
 
 button {
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   border-radius: var(--radius);
-  padding: 0.6rem 1rem;
+  padding: 0.55rem 1rem;
   background: var(--accent);
-  color: #04120e;
+  color: #fff;
   font-weight: 600;
-  transition: background 0.15s ease, transform 0.1s ease;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 button:hover:not(:disabled) {
   background: var(--accent-hover);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 1px;
 }
 
 button:disabled {
@@ -61,34 +69,34 @@ button:disabled {
 }
 
 button.ghost {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 button.ghost:hover:not(:disabled) {
   background: var(--surface-2);
-  color: var(--text);
 }
 
 button.danger {
   background: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
+  color: var(--muted);
 }
 
 button.danger:hover:not(:disabled) {
-  background: rgba(212, 100, 90, 0.15);
+  background: #fef3f2;
+  color: var(--danger);
 }
 
 input {
   width: 100%;
-  padding: 0.65rem 0.85rem;
+  padding: 0.6rem 0.8rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
-  outline: none;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 input:focus {
@@ -98,8 +106,15 @@ input:focus {
 label {
   display: block;
   font-size: 0.85rem;
-  color: var(--muted);
+  font-weight: 500;
+  color: var(--text);
   margin-bottom: 0.35rem;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
 }
 
 .field {
