@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      SECRET_KEY: docker-dev-secret
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a randomly generated secret}
       CORS_ORIGINS: http://localhost:3000
 
   frontend:

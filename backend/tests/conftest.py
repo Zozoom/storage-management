@@ -1,6 +1,7 @@
 import os
 
 os.environ["TESTING"] = "1"
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key-for-tests-not-production")
 
 import pytest
 from fastapi.testclient import TestClient
