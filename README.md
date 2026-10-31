@@ -4,14 +4,14 @@ Simple full-stack app to track warehouse stock for different items.
 
 - **Frontend:** Next.js (App Router)
 - **Backend:** FastAPI (OpenAPI / Swagger at `/docs`)
-- **Database:** PostgreSQL
+- **Storage:** in-memory only (no database). Dummy data is reseeded on every start; changes are lost on restart.
 
 ## Features
 
 - JWT login
 - List / create / adjust / delete stock items
 - Low-stock highlighting
-- Seeded demo users and inventory
+- Demo users and inventory loaded on every start
 
 ## Demo credentials
 
@@ -31,13 +31,7 @@ docker compose up --build
 
 ## Local development
 
-### 1. PostgreSQL
-
-```bash
-docker compose up db -d
-```
-
-### 2. Backend
+### 1. Backend
 
 ```bash
 cd backend
@@ -48,7 +42,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 3. Frontend
+### 2. Frontend
 
 ```bash
 cd frontend
@@ -82,7 +76,7 @@ cd frontend && npm test
 ## Project layout
 
 ```
-backend/     FastAPI app, seed data, pytest
+backend/     FastAPI app, in-memory store + seed data, pytest
 frontend/    Next.js UI + Jest tests
 docker-compose.yml
 ```

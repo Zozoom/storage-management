@@ -1,19 +1,14 @@
-import os
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy.pool import StaticPool
 
-from app.config import settings
-
-if os.getenv("TESTING") == "1":
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-else:
-    engine = create_engine(settings.database_url)
+# In-memory only: data lives in the process and is reseeded on every start.
+# shortcut: one shared connection, single worker only; use a real DB if data must persist or scale.
+engine = create_engine(
+    "sqlite://",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
