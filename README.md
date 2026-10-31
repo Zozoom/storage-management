@@ -4,7 +4,7 @@ Simple full-stack app to track warehouse stock for different items.
 
 - **Frontend:** Next.js (App Router)
 - **Backend:** FastAPI (OpenAPI / Swagger at `/docs`)
-- **Storage:** in-memory only (no database). Dummy data is reseeded on every start; changes are lost on restart.
+- **Storage:** temporary file-backed SQLite, scoped to each process. Dummy data is reseeded on every start; changes are lost when the process restarts.
 
 ## Features
 
@@ -31,8 +31,8 @@ docker compose up --build
 
 ## Deploy on Vercel
 
-`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else goes to Next.js. Run both locally with `vercel dev`.
-Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
+`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else to Next.js. Run both locally with `vercel dev`.
+Note: Vercel runs the backend as serverless functions, so each instance has its own temporary SQLite file; data may reset when an instance restarts and may differ between instances.
 
 ## Local development
 
@@ -41,7 +41,7 @@ Note: Vercel runs the backend as serverless functions, so the in-memory data can
 ```bash
 cd backend
 python -m venv .venv
-# Windows: .venv\Scripts\activate
+# Windows: .venv\\Scripts\\activate
 # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
@@ -81,7 +81,7 @@ cd frontend && npm test
 ## Project layout
 
 ```
-backend/     FastAPI app, in-memory store + seed data, pytest
+backend/     FastAPI app, temporary SQLite store + seed data, pytest
 frontend/    Next.js UI + Jest tests
 docker-compose.yml
 ```

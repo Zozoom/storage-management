@@ -9,11 +9,13 @@ def test_login_success(client):
     assert data["token_type"] == "bearer"
 
 
-def test_login_lets_anyone_in(client):
-    for body in ({"username": "admin", "password": "wrong"}, {"username": "", "password": ""}):
-        token = client.post("/api/auth/login/json", json=body).json()["access_token"]
-        me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
-        assert me.json()["username"] == "admin"
+def test_login_rejects_invalid_credentials(client):
+    for body in (
+        {"username": "admin", "password": "wrong"},
+        {"username": "unknown", "password": "admin123"},
+    ):
+        response = client.post("/api/auth/login/json", json=body)
+        assert response.status_code == 401
 
 
 def test_me_requires_auth(client):

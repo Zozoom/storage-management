@@ -4,7 +4,13 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Item, User
-from app.schemas import ItemCreate, ItemOut, ItemUpdate, StockAdjust
+from app.schemas import (
+    SQLITE_INTEGER_MAX,
+    ItemCreate,
+    ItemOut,
+    ItemUpdate,
+    StockAdjust,
+)
 
 router = APIRouter(prefix="/api/items", tags=["items"])
 
@@ -13,6 +19,17 @@ def to_item_out(item: Item) -> ItemOut:
     data = ItemOut.model_validate(item)
     data.low_stock = item.quantity < item.min_stock
     return data
+
+
+def _adjusted_quantity(quantity: int, delta: int) -> int:
+    new_quantity = quantity + delta
+    if new_quantity < 0:
+        raise HTTPException(status_code=400, detail="Insufficient stock")
+    if new_quantity > SQLITE_INTEGER_MAX:
+        raise HTTPException(
+            status_code=422, detail="Quantity exceeds SQLite integer range"
+        )
+    return new_quantity
 
 
 @router.get("", response_model=list[ItemOut])
@@ -78,10 +95,7 @@ def adjust_stock(
     item = db.get(Item, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    new_qty = item.quantity + body.delta
-    if new_qty < 0:
-        raise HTTPException(status_code=400, detail="Insufficient stock")
-    item.quantity = new_qty
+    item.quantity = _adjusted_quantity(item.quantity, body.delta)
     db.commit()
     db.refresh(item)
     return to_item_out(item)

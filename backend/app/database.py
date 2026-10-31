@@ -1,13 +1,16 @@
+import tempfile
+from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from sqlalchemy.pool import StaticPool
 
-# In-memory only: data lives in the process and is reseeded on every start.
-# shortcut: one shared connection, single worker only; use a real DB if data must persist or scale.
+# A temporary file preserves process-local, transient data while allowing the
+# connection pool to give each concurrent session its own SQLite connection.
+_database_dir = tempfile.TemporaryDirectory(prefix="storage-management-")
+_database_path = Path(_database_dir.name) / "storage.db"
 engine = create_engine(
-    "sqlite://",
+    f"sqlite:///{_database_path.as_posix()}",
     connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

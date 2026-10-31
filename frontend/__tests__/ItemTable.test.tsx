@@ -16,6 +16,14 @@ const sample: Item[] = [
   },
 ];
 
+const zeroStockItem: Item = {
+  ...sample[0],
+  id: 2,
+  sku: "BOX-001",
+  name: "Box",
+  quantity: 0,
+};
+
 describe("ItemTable", () => {
   it("renders item rows and low stock badge", () => {
     render(
@@ -43,6 +51,72 @@ describe("ItemTable", () => {
     );
     fireEvent.click(screen.getByLabelText("Increase Widget"));
     expect(onAdjust).toHaveBeenCalledWith(1, 1);
+  });
+
+  it("calls onAdjust when decreasing an item with positive quantity", () => {
+    const onAdjust = jest.fn();
+    render(
+      <ItemTable
+        items={sample}
+        onAdjust={onAdjust}
+        onDelete={jest.fn()}
+        busyId={null}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText("Decrease Widget"));
+
+    expect(onAdjust).toHaveBeenCalledWith(1, -1);
+  });
+
+  it("disables decreasing an item when its quantity is zero", () => {
+    const onAdjust = jest.fn();
+    render(
+      <ItemTable
+        items={[zeroStockItem]}
+        onAdjust={onAdjust}
+        onDelete={jest.fn()}
+        busyId={null}
+      />
+    );
+
+    expect(screen.getByLabelText("Decrease Box")).toBeDisabled();
+    fireEvent.click(screen.getByLabelText("Decrease Box"));
+    expect(onAdjust).not.toHaveBeenCalled();
+  });
+
+  it("calls onDelete for the selected item", () => {
+    const onDelete = jest.fn();
+    render(
+      <ItemTable
+        items={sample}
+        onAdjust={jest.fn()}
+        onDelete={onDelete}
+        busyId={null}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText("Delete Widget"));
+
+    expect(onDelete).toHaveBeenCalledWith(1);
+  });
+
+  it("disables actions only for the busy item", () => {
+    render(
+      <ItemTable
+        items={[sample[0], zeroStockItem]}
+        onAdjust={jest.fn()}
+        onDelete={jest.fn()}
+        busyId={1}
+      />
+    );
+
+    expect(screen.getByLabelText("Decrease Widget")).toBeDisabled();
+    expect(screen.getByLabelText("Increase Widget")).toBeDisabled();
+    expect(screen.getByLabelText("Delete Widget")).toBeDisabled();
+
+    expect(screen.getByLabelText("Increase Box")).toBeEnabled();
+    expect(screen.getByLabelText("Delete Box")).toBeEnabled();
   });
 
   it("shows empty state", () => {
