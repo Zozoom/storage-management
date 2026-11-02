@@ -61,6 +61,6 @@ def client(db_session):
 
 
 @pytest.fixture()
-def auth_headers():
+def auth_cookies():
     token = create_access_token("admin")
-    return {"Authorization": f"Bearer {token}"}
+    return {"storage_session": token}

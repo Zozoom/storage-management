@@ -13,7 +13,9 @@ Simple full-stack app to track warehouse stock for different items.
 - Low-stock highlighting
 - Demo users and inventory loaded on every start
 
-## Demo credentials
+## Development demo credentials
+
+These credentials are for local development only. Production does not seed these accounts.
 
 | Username | Password  |
 |----------|-----------|
@@ -31,7 +33,8 @@ docker compose up --build
 
 ## Deploy on Vercel
 
-`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else goes to Next.js. Run both locally with `vercel dev`.
+`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else to Next.js. Run both locally with `vercel dev`.
+For production deployments, set `APP_ENV=production`, `INITIAL_ADMIN_USERNAME`, and `INITIAL_ADMIN_PASSWORD` as deployment environment variables. Store the password as a deployment secret and use a unique password of at least 12 characters. Production startup fails if the administrator credentials are missing or the password is too short.
 Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
 
 ## Local development

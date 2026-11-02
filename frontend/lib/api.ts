@@ -13,51 +13,55 @@ export type Item = {
   low_stock: boolean;
 };
 
-function authHeaders(token: string): HeadersInit {
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
+const SESSION_OPTIONS: RequestInit = { credentials: "include" };
+
+function jsonHeaders(): HeadersInit {
+  return { "Content-Type": "application/json" };
 }
 
-export async function login(
-  username: string,
-  password: string
-): Promise<string> {
+export async function login(username: string, password: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/auth/login/json`, {
+    ...SESSION_OPTIONS,
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonHeaders(),
     body: JSON.stringify({ username, password }),
   });
   if (!res.ok) {
     throw new Error("Invalid username or password");
   }
-  const data = await res.json();
-  return data.access_token as string;
 }
 
-export async function fetchItems(token: string): Promise<Item[]> {
-  const res = await fetch(`${API_URL}/api/items`, {
-    headers: authHeaders(token),
+export async function getCurrentUser(): Promise<boolean> {
+  const res = await fetch(`${API_URL}/api/auth/me`, SESSION_OPTIONS);
+  return res.ok;
+}
+
+export async function logoutSession(): Promise<void> {
+  const res = await fetch(`${API_URL}/api/auth/logout`, {
+    ...SESSION_OPTIONS,
+    method: "POST",
   });
+  if (!res.ok) throw new Error("Failed to log out");
+}
+
+export async function fetchItems(): Promise<Item[]> {
+  const res = await fetch(`${API_URL}/api/items`, SESSION_OPTIONS);
   if (!res.ok) throw new Error("Failed to load items");
   return res.json();
 }
 
-export async function createItem(
-  token: string,
-  body: {
-    sku: string;
-    name: string;
-    description?: string;
-    quantity: number;
-    location: string;
-    min_stock: number;
-  }
-): Promise<Item> {
+export async function createItem(body: {
+  sku: string;
+  name: string;
+  description?: string;
+  quantity: number;
+  location: string;
+  min_stock: number;
+}): Promise<Item> {
   const res = await fetch(`${API_URL}/api/items`, {
+    ...SESSION_OPTIONS,
     method: "POST",
-    headers: authHeaders(token),
+    headers: jsonHeaders(),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -67,14 +71,11 @@ export async function createItem(
   return res.json();
 }
 
-export async function adjustStock(
-  token: string,
-  id: number,
-  delta: number
-): Promise<Item> {
+export async function adjustStock(id: number, delta: number): Promise<Item> {
   const res = await fetch(`${API_URL}/api/items/${id}/adjust`, {
+    ...SESSION_OPTIONS,
     method: "POST",
-    headers: authHeaders(token),
+    headers: jsonHeaders(),
     body: JSON.stringify({ delta }),
   });
   if (!res.ok) {
@@ -84,10 +85,10 @@ export async function adjustStock(
   return res.json();
 }
 
-export async function deleteItem(token: string, id: number): Promise<void> {
+export async function deleteItem(id: number): Promise<void> {
   const res = await fetch(`${API_URL}/api/items/${id}`, {
+    ...SESSION_OPTIONS,
     method: "DELETE",
-    headers: authHeaders(token),
   });
   if (!res.ok) throw new Error("Failed to delete item");
 }

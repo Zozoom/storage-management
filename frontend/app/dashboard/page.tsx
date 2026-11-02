@@ -9,14 +9,13 @@ import {
   createItem,
   deleteItem,
   fetchItems,
+  logoutSession,
   type Item,
 } from "@/lib/api";
-import { clearToken, getToken } from "@/lib/auth";
 import styles from "./page.module.css";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [token, setTokenState] = useState<string | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -24,32 +23,22 @@ export default function DashboardPage() {
   const [adding, setAdding] = useState(false);
   const [query, setQuery] = useState("");
 
-  const load = useCallback(async (t: string) => {
-    const data = await fetchItems(t);
+  const load = useCallback(async () => {
+    const data = await fetchItems();
     setItems(data);
   }, []);
 
   useEffect(() => {
-    const t = getToken();
-    if (!t) {
-      router.replace("/");
-      return;
-    }
-    setTokenState(t);
-    load(t)
-      .catch(() => {
-        clearToken();
-        router.replace("/");
-      })
+    load()
+      .catch(() => router.replace("/"))
       .finally(() => setLoading(false));
   }, [load, router]);
 
   async function handleAdjust(id: number, delta: number) {
-    if (!token) return;
     setBusyId(id);
     setError("");
     try {
-      const updated = await adjustStock(token, id, delta);
+      const updated = await adjustStock(id, delta);
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Adjust failed");
@@ -59,12 +48,11 @@ export default function DashboardPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!token) return;
     if (!confirm("Delete this item?")) return;
     setBusyId(id);
     setError("");
     try {
-      await deleteItem(token, id);
+      await deleteItem(id);
       setItems((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Delete failed");
@@ -74,15 +62,17 @@ export default function DashboardPage() {
   }
 
   async function handleCreate(body: NewItem) {
-    if (!token) return;
-    const created = await createItem(token, body);
+    const created = await createItem(body);
     setItems((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
     setAdding(false);
   }
 
-  function logout() {
-    clearToken();
-    router.push("/");
+  async function logout() {
+    try {
+      await logoutSession();
+    } finally {
+      router.push("/");
+    }
   }
 
   const lowCount = items.filter((i) => i.low_stock).length;
@@ -104,7 +94,7 @@ export default function DashboardPage() {
             </span>
             Storage
           </div>
-          <button type="button" className="ghost" onClick={logout}>
+          <button type="button" className="ghost" onClick={() => void logout()}>
             Log out
           </button>
         </div>

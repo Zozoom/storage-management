@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password
@@ -15,8 +17,29 @@ MOCK_ITEMS = [
 ]
 
 
+def _users_to_seed() -> list[dict[str, str]]:
+    is_production = any(
+        os.getenv(name, "").strip().lower() == "production"
+        for name in ("APP_ENV", "ENVIRONMENT", "VERCEL_ENV")
+    )
+    if not is_production:
+        return MOCK_USERS
+
+    username = os.getenv("INITIAL_ADMIN_USERNAME", "").strip()
+    password = os.getenv("INITIAL_ADMIN_PASSWORD", "")
+    if not username or len(password) < 12:
+        raise RuntimeError(
+            "Production seeding requires INITIAL_ADMIN_USERNAME and an "
+            "INITIAL_ADMIN_PASSWORD of at least 12 characters"
+        )
+    return [{"username": username, "password": password}]
+
+
 def seed_db(db: Session) -> None:
-    users = [User(username=u["username"], hashed_password=hash_password(u["password"])) for u in MOCK_USERS]
+    users = [
+        User(username=user["username"], hashed_password=hash_password(user["password"]))
+        for user in _users_to_seed()
+    ]
     db.add_all(users)
     db.flush()
     db.add_all(Item(**item, created_by_id=users[0].id) for item in MOCK_ITEMS)

@@ -1,5 +1,5 @@
-def test_list_items(client, auth_headers):
-    response = client.get("/api/items", headers=auth_headers)
+def test_list_items(client, auth_cookies):
+    response = client.get("/api/items", cookies=auth_cookies)
     assert response.status_code == 200
     items = response.json()
     assert len(items) == 1
@@ -12,10 +12,10 @@ def test_list_items_unauthorized(client):
     assert response.status_code == 401
 
 
-def test_create_item(client, auth_headers):
+def test_create_item(client, auth_cookies):
     response = client.post(
         "/api/items",
-        headers=auth_headers,
+        cookies=auth_cookies,
         json={
             "sku": "NEW-1",
             "name": "New Thing",
@@ -28,35 +28,35 @@ def test_create_item(client, auth_headers):
     assert response.json()["sku"] == "NEW-1"
 
 
-def test_adjust_stock(client, auth_headers):
-    listed = client.get("/api/items", headers=auth_headers).json()
+def test_adjust_stock(client, auth_cookies):
+    listed = client.get("/api/items", cookies=auth_cookies).json()
     item_id = listed[0]["id"]
 
     response = client.post(
         f"/api/items/{item_id}/adjust",
-        headers=auth_headers,
+        cookies=auth_cookies,
         json={"delta": -3},
     )
     assert response.status_code == 200
     assert response.json()["quantity"] == 7
 
 
-def test_adjust_stock_insufficient(client, auth_headers):
-    listed = client.get("/api/items", headers=auth_headers).json()
+def test_adjust_stock_insufficient(client, auth_cookies):
+    listed = client.get("/api/items", cookies=auth_cookies).json()
     item_id = listed[0]["id"]
 
     response = client.post(
         f"/api/items/{item_id}/adjust",
-        headers=auth_headers,
+        cookies=auth_cookies,
         json={"delta": -999},
     )
     assert response.status_code == 400
 
 
-def test_delete_item(client, auth_headers):
-    listed = client.get("/api/items", headers=auth_headers).json()
+def test_delete_item(client, auth_cookies):
+    listed = client.get("/api/items", cookies=auth_cookies).json()
     item_id = listed[0]["id"]
 
-    response = client.delete(f"/api/items/{item_id}", headers=auth_headers)
+    response = client.delete(f"/api/items/{item_id}", cookies=auth_cookies)
     assert response.status_code == 204
-    assert client.get("/api/items", headers=auth_headers).json() == []
+    assert client.get("/api/items", cookies=auth_cookies).json() == []

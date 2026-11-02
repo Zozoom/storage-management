@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
-import { getToken, setToken } from "@/lib/auth";
+import { hasSession } from "@/lib/auth";
 import styles from "./page.module.css";
 
 export default function LoginPage() {
@@ -14,7 +14,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (getToken()) router.replace("/dashboard");
+    hasSession().then((active) => {
+      if (active) router.replace("/dashboard");
+    }).catch(() => {});
   }, [router]);
 
   async function onSubmit(e: FormEvent) {
@@ -22,8 +24,7 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const token = await login(username, password);
-      setToken(token);
+      await login(username, password);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
