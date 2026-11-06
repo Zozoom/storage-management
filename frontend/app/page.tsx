@@ -14,7 +14,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (getToken()) router.replace("/dashboard");
+    try {
+      if (getToken()) router.replace("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Authentication storage is unavailable");
+    }
   }, [router]);
 
   async function onSubmit(e: FormEvent) {

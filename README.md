@@ -16,12 +16,18 @@ Simple full-stack app to track warehouse stock for different items.
 
 ## Demo credentials
 
+The following credentials work **only in local development** when the backend is started with `APP_ENV=development`. Do not use these accounts in a deployed or production environment.
+
 | Username | Password  |
 |----------|-----------|
 | `admin`  | `admin123`|
 | `clerk`  | `clerk123`|
 
+Production deployments must provision accounts through a trusted process using deployment-specific secrets, and must not set `APP_ENV=development`. This project does not implement production account provisioning; do not expose a deployment until that process is in place.
+
 ## Quick start (Docker)
+
+Docker Compose is configured for isolated local development only: demo accounts are enabled and service ports are bound to loopback. Do not use this configuration for production deployments.
 
 ```bash
 docker compose up --build
@@ -32,8 +38,8 @@ docker compose up --build
 
 ## Deploy on Vercel
 
-`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else goes to Next.js. Run both locally with `vercel dev`.
-Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
+`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else to Next.js. Run both locally with `vercel dev`.
+Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances. Demo accounts are not seeded unless `APP_ENV=development` is explicitly configured; production account provisioning must be handled securely using deployment-specific secrets.
 
 ## Local development
 
@@ -45,8 +51,10 @@ python -m venv .venv
 # Windows: .venv\Scripts\activate
 # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+APP_ENV=development uvicorn app.main:app --reload --port 8000
 ```
+
+On Windows PowerShell, set `$env:APP_ENV = "development"` before starting Uvicorn.
 
 ### 2. Frontend
 

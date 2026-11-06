@@ -1,6 +1,7 @@
 import os
 
 os.environ["TESTING"] = "1"
+os.environ["SECRET_KEY"] = "test-only-secret-key-with-sufficient-length"
 
 import pytest
 from fastapi.testclient import TestClient

@@ -9,6 +9,7 @@ import {
   createItem,
   deleteItem,
   fetchItems,
+  logout as revokeSession,
   type Item,
 } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
@@ -30,7 +31,15 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    const t = getToken();
+    let t: string | null;
+    try {
+      t = getToken();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Authentication storage is unavailable");
+      router.replace("/");
+      setLoading(false);
+      return;
+    }
     if (!t) {
       router.replace("/");
       return;
@@ -38,7 +47,11 @@ export default function DashboardPage() {
     setTokenState(t);
     load(t)
       .catch(() => {
-        clearToken();
+        try {
+          clearToken();
+        } catch {
+          // Continue redirecting even when browser storage is unavailable.
+        }
         router.replace("/");
       })
       .finally(() => setLoading(false));
@@ -80,9 +93,19 @@ export default function DashboardPage() {
     setAdding(false);
   }
 
-  function logout() {
-    clearToken();
-    router.push("/");
+  async function logout() {
+    try {
+      if (token) await revokeSession(token);
+    } catch {
+      // Clear the local session even if the server cannot be reached.
+    } finally {
+      try {
+        clearToken();
+      } catch {
+        // Continue leaving the dashboard even when browser storage is unavailable.
+      }
+      router.push("/");
+    }
   }
 
   const lowCount = items.filter((i) => i.low_stock).length;

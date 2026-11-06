@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password
@@ -16,8 +18,30 @@ MOCK_ITEMS = [
 
 
 def seed_db(db: Session) -> None:
-    users = [User(username=u["username"], hashed_password=hash_password(u["password"])) for u in MOCK_USERS]
-    db.add_all(users)
-    db.flush()
-    db.add_all(Item(**item, created_by_id=users[0].id) for item in MOCK_ITEMS)
+    users: dict[str, User] = {}
+    is_development = os.getenv("APP_ENV") == "development"
+    if is_development:
+        usernames = [user["username"] for user in MOCK_USERS]
+        users = {
+            user.username: user
+            for user in db.query(User).filter(User.username.in_(usernames)).all()
+        }
+        for user_data in MOCK_USERS:
+            if user_data["username"] not in users:
+                user = User(
+                    username=user_data["username"],
+                    hashed_password=hash_password(user_data["password"]),
+                )
+                db.add(user)
+                users[user.username] = user
+        db.flush()
+
+    skus = [item["sku"] for item in MOCK_ITEMS]
+    existing_skus = {
+        item.sku for item in db.query(Item).filter(Item.sku.in_(skus)).all()
+    }
+    creator_id = users["admin"].id if is_development else None
+    for item_data in MOCK_ITEMS:
+        if item_data["sku"] not in existing_skus:
+            db.add(Item(**item_data, created_by_id=creator_id))
     db.commit()
