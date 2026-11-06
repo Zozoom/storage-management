@@ -1,3 +1,5 @@
+import threading
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy.pool import StaticPool
@@ -11,6 +13,7 @@ engine = create_engine(
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+_database_lock = threading.Lock()
 
 
 class Base(DeclarativeBase):
@@ -18,8 +21,12 @@ class Base(DeclarativeBase):
 
 
 def get_db():
-    db = SessionLocal()
+    _database_lock.acquire()
     try:
-        yield db
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
     finally:
-        db.close()
+        _database_lock.release()

@@ -4,7 +4,12 @@ services:
     ports:
       - "8000:8000"
     environment:
-      SECRET_KEY: docker-dev-secret
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a random deployment-specific secret}
+      APP_MODE: ${APP_MODE:-production}
+      DEMO_ADMIN_USERNAME: ${DEMO_ADMIN_USERNAME:-}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-}
+      DEMO_CLERK_USERNAME: ${DEMO_CLERK_USERNAME:-}
+      DEMO_CLERK_PASSWORD: ${DEMO_CLERK_PASSWORD:-}
       CORS_ORIGINS: http://localhost:3000
 
   frontend:
