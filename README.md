@@ -9,6 +9,7 @@ Simple full-stack app to track warehouse stock for different items.
 ## Features
 
 - JWT login
+- 
 - List / create / adjust / delete stock items
 - Low-stock highlighting
 - Demo users and inventory loaded on every start
