@@ -9,6 +9,7 @@ import {
   createItem,
   deleteItem,
   fetchItems,
+  logout as revokeToken,
   type Item,
 } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
@@ -80,9 +81,15 @@ export default function DashboardPage() {
     setAdding(false);
   }
 
-  function logout() {
-    clearToken();
-    router.push("/");
+  async function logout() {
+    try {
+      if (token) await revokeToken(token);
+    } catch {
+      // Clear the local session even if the backend cannot be reached.
+    } finally {
+      clearToken();
+      router.push("/");
+    }
   }
 
   const lowCount = items.filter((i) => i.low_stock).length;

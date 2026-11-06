@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Item, User
-from app.schemas import ItemCreate, ItemOut, ItemUpdate, StockAdjust
+from app.schemas import MAX_STOCK_QUANTITY, ItemCreate, ItemOut, ItemUpdate, StockAdjust
 
 router = APIRouter(prefix="/api/items", tags=["items"])
 
@@ -81,6 +81,8 @@ def adjust_stock(
     new_qty = item.quantity + body.delta
     if new_qty < 0:
         raise HTTPException(status_code=400, detail="Insufficient stock")
+    if new_qty > MAX_STOCK_QUANTITY:
+        raise HTTPException(status_code=422, detail="Stock quantity exceeds maximum")
     item.quantity = new_qty
     db.commit()
     db.refresh(item)

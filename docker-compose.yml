@@ -4,7 +4,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      SECRET_KEY: docker-dev-secret
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY before starting Docker Compose}
+      ENABLE_DEMO_DATA: ${ENABLE_DEMO_DATA:-0}
       CORS_ORIGINS: http://localhost:3000
 
   frontend:

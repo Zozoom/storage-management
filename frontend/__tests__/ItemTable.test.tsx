@@ -45,6 +45,61 @@ describe("ItemTable", () => {
     expect(onAdjust).toHaveBeenCalledWith(1, 1);
   });
 
+  it("calls onDelete with the item ID", () => {
+    const onDelete = jest.fn();
+    render(
+      <ItemTable
+        items={sample}
+        onAdjust={jest.fn()}
+        onDelete={onDelete}
+        busyId={null}
+      />
+    );
+    fireEvent.click(screen.getByLabelText("Delete Widget"));
+    expect(onDelete).toHaveBeenCalledWith(1);
+  });
+
+  it("calls onAdjust with a negative delta when decrement is clicked", () => {
+    const onAdjust = jest.fn();
+    render(
+      <ItemTable
+        items={sample}
+        onAdjust={onAdjust}
+        onDelete={jest.fn()}
+        busyId={null}
+      />
+    );
+    fireEvent.click(screen.getByLabelText("Decrease Widget"));
+    expect(onAdjust).toHaveBeenCalledWith(1, -1);
+  });
+
+  it("disables decrement when quantity is zero", () => {
+    const zeroQuantityItem = { ...sample[0], quantity: 0 };
+    render(
+      <ItemTable
+        items={[zeroQuantityItem]}
+        onAdjust={jest.fn()}
+        onDelete={jest.fn()}
+        busyId={null}
+      />
+    );
+    expect(screen.getByLabelText("Decrease Widget")).toBeDisabled();
+  });
+
+  it("disables all actions for the busy item", () => {
+    render(
+      <ItemTable
+        items={sample}
+        onAdjust={jest.fn()}
+        onDelete={jest.fn()}
+        busyId={1}
+      />
+    );
+    expect(screen.getByLabelText("Decrease Widget")).toBeDisabled();
+    expect(screen.getByLabelText("Increase Widget")).toBeDisabled();
+    expect(screen.getByLabelText("Delete Widget")).toBeDisabled();
+  });
+
   it("shows empty state", () => {
     render(
       <ItemTable

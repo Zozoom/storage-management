@@ -4,36 +4,38 @@ Simple full-stack app to track warehouse stock for different items.
 
 - **Frontend:** Next.js (App Router)
 - **Backend:** FastAPI (OpenAPI / Swagger at `/docs`)
-- **Storage:** in-memory only (no database). Dummy data is reseeded on every start; changes are lost on restart.
+- **Storage:** in-memory only (no database). Data is lost on restart.
 
 ## Features
 
 - JWT login
-- 
 - List / create / adjust / delete stock items
 - Low-stock highlighting
-- Demo users and inventory loaded on every start
-
-## Demo credentials
-
-| Username | Password  |
-|----------|-----------|
-| `admin`  | `admin123`|
-| `clerk`  | `clerk123`|
 
 ## Quick start (Docker)
 
+Set a unique secret before starting the application. Keep it private and use your deployment platform's secret manager outside local development.
+
 ```bash
+export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
 docker compose up --build
 ```
 
-- App: http://localhost:3000  
-- API + Swagger: http://localhost:8000/docs  
+Demo users and inventory are not seeded by default. For isolated local development only, explicitly opt in before starting Compose:
+
+```bash
+ENABLE_DEMO_DATA=1 docker compose up --build
+```
+
+Do not enable demo data in a reachable deployment. The seed data uses shared development credentials.
+
+- App: http://localhost:3000
+- API + Swagger: http://localhost:8000/docs
 
 ## Deploy on Vercel
 
-`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else goes to Next.js. Run both locally with `vercel dev`.
-Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
+`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else to Next.js. Run both locally with `vercel dev`.
+Configure a securely generated `SECRET_KEY` using Vercel's deployment secrets. Do not enable demo data in a reachable deployment. Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
 
 ## Local development
 
@@ -47,6 +49,8 @@ python -m venv .venv
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
+
+Set `SECRET_KEY` in the environment before starting the backend. To seed demo users and inventory for isolated local development, also set `ENABLE_DEMO_DATA=1`.
 
 ### 2. Frontend
 

@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password
@@ -16,6 +18,9 @@ MOCK_ITEMS = [
 
 
 def seed_db(db: Session) -> None:
+    if os.getenv("ENABLE_DEMO_DATA") != "1":
+        return
+
     users = [User(username=u["username"], hashed_password=hash_password(u["password"])) for u in MOCK_USERS]
     db.add_all(users)
     db.flush()

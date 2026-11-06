@@ -1,3 +1,5 @@
+import time
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, HTTPException, status
@@ -12,6 +14,7 @@ from app.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+_revoked_tokens: dict[str, float] = {}
 
 
 def hash_password(password: str) -> str:
@@ -27,10 +30,21 @@ def create_access_token(subject: str) -> str:
         minutes=settings.access_token_expire_minutes
     )
     return jwt.encode(
-        {"sub": subject, "exp": expire},
+        {"sub": subject, "exp": expire, "jti": str(uuid.uuid4())},
         settings.secret_key,
         algorithm="HS256",
     )
+
+
+def revoke_access_token(token: str) -> None:
+    payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+    token_id = payload["jti"]
+    expires_at = float(payload["exp"])
+    now = time.time()
+    for revoked_id, expiry in list(_revoked_tokens.items()):
+        if expiry <= now:
+            del _revoked_tokens[revoked_id]
+    _revoked_tokens[token_id] = expires_at
 
 
 def get_current_user(
@@ -45,7 +59,8 @@ def get_current_user(
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
         username: str | None = payload.get("sub")
-        if not username:
+        token_id: str | None = payload.get("jti")
+        if not username or not token_id or token_id in _revoked_tokens:
             raise credentials_exc
     except JWTError as exc:
         raise credentials_exc from exc

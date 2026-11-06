@@ -3,6 +3,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+MAX_STOCK_QUANTITY = 2_147_483_647
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -52,4 +55,8 @@ class ItemOut(BaseModel):
 
 
 class StockAdjust(BaseModel):
-    delta: int = Field(description="Positive to add, negative to remove")
+    delta: int = Field(
+        ge=-MAX_STOCK_QUANTITY,
+        le=MAX_STOCK_QUANTITY,
+        description="Positive to add, negative to remove",
+    )

@@ -36,6 +36,14 @@ export async function login(
   return data.access_token as string;
 }
 
+export async function logout(token: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/auth/logout`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error("Failed to log out");
+}
+
 export async function fetchItems(token: string): Promise<Item[]> {
   const res = await fetch(`${API_URL}/api/items`, {
     headers: authHeaders(token),
