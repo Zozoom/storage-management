@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password
@@ -16,8 +18,25 @@ MOCK_ITEMS = [
 
 
 def seed_db(db: Session) -> None:
-    users = [User(username=u["username"], hashed_password=hash_password(u["password"])) for u in MOCK_USERS]
+    if os.getenv("TESTING") == "1":
+        user_credentials = MOCK_USERS
+    else:
+        username = os.getenv("INITIAL_ADMIN_USERNAME")
+        password = os.getenv("INITIAL_ADMIN_PASSWORD")
+        if bool(username) != bool(password):
+            raise RuntimeError(
+                "INITIAL_ADMIN_USERNAME and INITIAL_ADMIN_PASSWORD must be set together"
+            )
+        user_credentials = (
+            [{"username": username, "password": password}] if username and password else []
+        )
+
+    users = [
+        User(username=u["username"], hashed_password=hash_password(u["password"]))
+        for u in user_credentials
+    ]
     db.add_all(users)
     db.flush()
-    db.add_all(Item(**item, created_by_id=users[0].id) for item in MOCK_ITEMS)
+    created_by_id = users[0].id if users else None
+    db.add_all(Item(**item, created_by_id=created_by_id) for item in MOCK_ITEMS)
     db.commit()

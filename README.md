@@ -4,22 +4,20 @@ Simple full-stack app to track warehouse stock for different items.
 
 - **Frontend:** Next.js (App Router)
 - **Backend:** FastAPI (OpenAPI / Swagger at `/docs`)
-- **Storage:** in-memory only (no database). Dummy data is reseeded on every start; changes are lost on restart.
+- **Storage:** in-memory only (no database). Inventory is reseeded on every start; changes are lost on restart.
 
 ## Features
 
 - JWT login
-- 
 - List / create / adjust / delete stock items
 - Low-stock highlighting
-- Demo users and inventory loaded on every start
+- Inventory loaded on startup
 
-## Demo credentials
+## Administrator provisioning
 
-| Username | Password  |
-|----------|-----------|
-| `admin`  | `admin123`|
-| `clerk`  | `clerk123`|
+Production startup does not create demo accounts. To provision an administrator, set both `INITIAL_ADMIN_USERNAME` and `INITIAL_ADMIN_PASSWORD` as protected deployment environment variables before starting the backend. Use a unique, strong password, keep these values out of source control and logs, and remove or rotate the provisioning values according to your deployment process. If neither variable is set, no user is created and login is unavailable; setting only one causes startup seeding to fail rather than silently using an incomplete configuration.
+
+Test mode uses demo users only for automated tests; those credentials are not production credentials.
 
 ## Quick start (Docker)
 
@@ -28,12 +26,14 @@ docker compose up --build
 ```
 
 - App: http://localhost:3000  
-- API + Swagger: http://localhost:8000/docs  
+- API + Swagger: http://localhost:8000/docs
+
+For a usable deployment, configure the administrator provisioning variables through the environment mechanism used by your deployment platform.
 
 ## Deploy on Vercel
 
-`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else goes to Next.js. Run both locally with `vercel dev`.
-Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances.
+`vercel.json` deploys both apps as one project: `/api/*` goes to the FastAPI backend and everything else to Next.js. Run both locally with `vercel dev`.
+Note: Vercel runs the backend as serverless functions, so the in-memory data can reset at any time and may differ between instances. Configure the administrator variables as protected deployment environment variables.
 
 ## Local development
 
@@ -48,6 +48,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
+Set `INITIAL_ADMIN_USERNAME` and `INITIAL_ADMIN_PASSWORD` in the backend environment to provision a local account. Optional configuration is in `backend/.env.example`.
+
 ### 2. Frontend
 
 ```bash
@@ -55,8 +57,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-Optional: copy `backend/.env.example` to `backend/.env`.
 
 ## API overview
 
